@@ -5,14 +5,12 @@ const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const ApiError = require('../utls/apiError');
-//const sendEmail = require('../utls/testMail');
+//const sendEmail = require('../utls/testMail');  //to send testing email
 const sendEmail = require('../utls/apiMailer');
+const createToken = require('../utls/createToken');
 const User = require('../models/userModel');
 
 
-const generateToken = (payload) => jwt.sign({ userId: payload }, process.env.JWT_SECRET_KEY, {
-    expiresIn: process.env.JWT_EXPIRED_TIME
-})
 //@desc Sign up
 //@route /api/v1/auth/signup
 //@access Public
@@ -25,7 +23,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
         password: req.body.password
     });
     // 2- create the token
-    const token = generateToken(user._id);
+    const token = createToken(user._id);
     res.status(201).json({ data: user, token })
 });
 
@@ -39,7 +37,7 @@ exports.login = asyncHandler(async (req, res, next) => {
     if (!user || !(await bcrypt.compare(req.body.password, user.password))) {
         return next(new ApiError('Incorrect email or password', 401))
     }
-    const token = generateToken(user._id);
+    const token = createToken(user._id);
     res.status(200).json({ data: user, token })
 
 });
